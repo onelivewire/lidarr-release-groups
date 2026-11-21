@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lidarr release groups — sample demo</title>
+<style>
+  :root{color-scheme:dark;font-family:system-ui;background:#171c23;color:#e1e7ef}
+  body{max-width:1000px;margin:48px auto;padding:0 24px;line-height:1.5}
+  h1{font-size:28px}p{color:#bac5d4}table{width:100%;border-collapse:collapse}
+  th,td{padding:12px;text-align:left;border-bottom:1px solid #394352}
+  a{color:#80c9ff}button{cursor:pointer}footer{margin-top:28px;color:#9daabb}
+</style>
+<h1>Lidarr release groups</h1>
+<p>Sample artist · synthetic metadata. Try collapsing Live albums, switching
+date order, and returning to Original view. The initial rows deliberately mix
+release types and titles that sort differently from dates.</p>
+<main><table><thead><tr><th>Title</th><th>Release date</th><th>Secondary types</th></tr></thead><tbody></tbody></table></main>
+<footer>This is a browser-only demonstration, not a connection to a music library.
+Album links are disabled in this sample.</footer>
+<script>
+  const items = [
+    ['A later record','2015-06-01',[]],
+    ['Arena evening','2008-04-12',['Live']],
+    ['Z first record','1985-02-01',[]],
+    ['Collection','2001-01-01',['Compilation']],
+    ['Club recording','1991-09-15',['Live']],
+    ['Collected concerts','2000-01-01',['Compilation','Live']],
+    ['Middle years','1997-03-01',[]],
+    ['Unreleased session',null,['Demo']]
+  ];
+  items.forEach(([title,releaseDate,secondaryTypes],i)=>{
+    const foreignAlbumId='00000000-0000-4000-8000-'+String(i+1).padStart(12,'0');
+    const row=document.createElement('tr');
+    const cell=document.createElement('td');const link=document.createElement('a');
+    link.href='/album/'+foreignAlbumId;link.textContent=title;
+    link.onclick=e=>e.preventDefault();cell.append(link);row.append(cell);
+    for(const text of [releaseDate||'Unknown',secondaryTypes.join(', ')||'—']){
+      const td=document.createElement('td');td.textContent=text;row.append(td);
+    }
+    row['__reactFiber$demo']={memoizedProps:{foreignAlbumId,title,releaseDate,secondaryTypes,albumType:'Album'}};
+    document.querySelector('tbody').append(row);
+  });
+  const source=new URL('release-groups.user.js',location.href).href;
+  history.replaceState({},'', '/artist/22222222-2222-4222-8222-222222222222');
+  const script=document.createElement('script');script.src=source;document.body.append(script);
+</script>
+</html>
