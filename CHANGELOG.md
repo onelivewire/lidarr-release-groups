@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.6 — embedded Lidarr compatibility
+
+- Allow execution inside Lidarr frames, including dashboards such as Organizr.
+  Permissions must cover the actual Lidarr frame address as well as any custom
+  direct address. Each frame still requires a Lidarr page identity.
+
 ## 1.0.5 — Chrome activation fix
 
 - Use standard HTTP/HTTPS URL matches with a Lidarr identity guard, avoiding

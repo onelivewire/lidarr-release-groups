@@ -95,7 +95,7 @@ This demonstrates grouping using synthetic rows, not a full Lidarr UI.
 
 ## Updates and recovery
 
-Downloads and update checks are pinned to **v1.0.5**. Installing this release
+Downloads and update checks are pinned to **v1.0.6**. Installing this release
 does not opt into future versions automatically. The browser owner controls installation:
 review a new release, run the checks, export the installed script as a backup,
 then install the newly reviewed release from its published URL. Reload an
