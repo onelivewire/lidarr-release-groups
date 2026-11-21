@@ -40,7 +40,7 @@ SAMPLE = [
 
 
 class ReleaseGroupsTests(unittest.TestCase):
-    def run_browser(self, albums, checks, fail=False, bootstrap=True, native=False, page_title='Sample artist — Lidarr UI test'):
+    def run_browser(self, albums, checks, fail=False, bootstrap=True, native=False, redirect=False, page_title='Sample artist — Lidarr UI test'):
         payload = json.dumps(albums).replace('<', '\\u003c')
         setup = '''
 const DATA=__DATA__;
@@ -48,8 +48,10 @@ const OTHER_ARTIST='11111111-1111-4111-8111-111111111111';
 const OTHER_DATA=[{id:901,foreignAlbumId:'99999999-9999-4999-8999-999999999991',title:'Other studio',releaseDate:'2000-01-01',albumType:'Album',secondaryTypes:[]},{id:902,foreignAlbumId:'99999999-9999-4999-8999-999999999992',title:'Other live',releaseDate:'2001-01-01',albumType:'Album',secondaryTypes:['Live']}];
 window.Lidarr={apiRoot:'/api/v1',apiKey:'fixture-only-not-a-credential'};
 window.REQUESTS=[];window.NATIVE=0;window.injection=false;
+const realFetch=window.fetch.bind(window);
 window.fetch=async(url,options={})=>{
  REQUESTS.push({url:String(url),method:options.method||'GET'});
+ if(__REDIRECT__)return realFetch(url,options);
  return new Response(JSON.stringify(String(url).includes('/artist')?[{id:198,foreignArtistId:'__ARTIST__'},{id:999,foreignArtistId:OTHER_ARTIST}]:String(url).includes('artistId=999')?OTHER_DATA:DATA),{status:__STATUS__,headers:{'Content-Type':'application/json'}});
 };
 function makeTable(items){
@@ -73,7 +75,7 @@ const BEFORE=[...TABLE.tBodies[0].children];
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function assert(condition,message){if(!condition)throw new Error(message);}
 const rows=()=>[...TABLE.tBodies[0].querySelectorAll(':scope > tr[data-native]')];
-'''.replace('__DATA__', payload).replace('__ARTIST__', ARTIST).replace('__STATUS__', '403' if fail else '200').replace('__NATIVE__', 'true' if native else 'false')
+'''.replace('__DATA__', payload).replace('__ARTIST__', ARTIST).replace('__STATUS__', '403' if fail else '200').replace('__NATIVE__', 'true' if native else 'false').replace('__REDIRECT__', 'true' if redirect else 'false')
         if not bootstrap:
             setup=setup.replace("window.Lidarr={apiRoot:'/api/v1',apiKey:'fixture-only-not-a-credential'};", '')
         final = '''
@@ -87,10 +89,33 @@ const rows=()=>[...TABLE.tBodies[0].querySelectorAll(':scope > tr[data-native]')
 '''.replace('__CHECKS__', checks)
         page = '<!doctype html><meta charset="utf-8"><title>Sample artist — Lidarr UI test</title><main></main><script>'+setup+'</script><script>'+SCRIPT+'</script><script>'+final+'</script>'
 
+        redirect_contacts = []
+
         page = page.replace('<title>Sample artist — Lidarr UI test</title>', '<title>' + html.escape(page_title) + '</title>')
 
         class Handler(BaseHTTPRequestHandler):
+            def do_OPTIONS(self):
+                redirect_contacts.append(('OPTIONS', False))
+                self.send_response(204)
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Access-Control-Allow-Headers', 'X-Api-Key')
+                self.end_headers()
+
             def do_GET(self):
+                if redirect and self.path.startswith('/api/v1/'):
+                    self.send_response(302)
+                    # Different hostname is a different origin, on this same local fixture.
+                    self.send_header('Location', f'http://localhost:{self.server.server_port}/redirect-target')
+                    self.end_headers()
+                    return
+                if self.path.startswith('/redirect-target'):
+                    redirect_contacts.append(('GET', 'X-Api-Key' in self.headers))
+                    self.send_response(200)
+                    self.send_header('Access-Control-Allow-Origin', '*')
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(b'[]')
+                    return
                 data=page.encode();self.send_response(200);self.send_header('Content-Type','text/html; charset=utf-8');self.send_header('Content-Length',str(len(data)));self.end_headers();self.wfile.write(data)
             def log_message(self,*args):
                 pass
@@ -113,6 +138,7 @@ const rows=()=>[...TABLE.tBodies[0].querySelectorAll(':scope > tr[data-native]')
                 self.assertIsNotNone(found,'Browser did not finish: '+result.stderr[-2000:])
                 value=json.loads(html.unescape(found.group(1)))
                 self.assertTrue(value.get('ok'),value)
+                self.assertEqual(redirect_contacts, [], 'Redirect target contacted (method, API-key-present): '+repr(redirect_contacts))
                 return value
         finally:
             server.shutdown();server.server_close();thread.join()
@@ -184,6 +210,23 @@ const rows=()=>[...TABLE.tBodies[0].querySelectorAll(':scope > tr[data-native]')
  assert(REQUESTS.length===1,'failed API request retried itself');
  rows()[0].querySelector('.native-monitor').click();assert(NATIVE===1,'native controls unavailable after failure');
  ''', fail=True)
+
+    def test_api_redirect_cannot_forward_credentials(self):
+        self.run_browser(SAMPLE, '''
+ assert(REQUESTS.length===1,'redirect failure retried itself');
+ assert(rows().every((r,i)=>r===BEFORE[i]),'redirect failure changed native rows');
+ assert(document.querySelector('[data-note]').textContent.includes('Original rows are unchanged'),'redirect failure not reported');
+ ''', redirect=True)
+
+    def test_off_origin_api_root_is_rejected_before_request(self):
+        self.run_browser(SAMPLE, '''
+ const before=REQUESTS.length;
+ window.Lidarr.apiRoot='https://example.invalid/api/v1';
+ [...document.querySelectorAll('#lrg-release-toolbar button')].find(b=>b.textContent==='Reload groups').click();
+ await sleep(350);
+ assert(REQUESTS.length===before,'off-origin API request was sent');
+ assert(document.querySelector('[data-note]').textContent.includes('Refusing a different API origin'),'origin rejection not reported');
+ ''')
 
     @unittest.skipUnless(os.environ.get('LIDARR_UI_CATALOG'),'Set LIDARR_UI_CATALOG for live catalog scale test')
     def test_live_catalog_scale_no_missing_or_duplicate_rows(self):

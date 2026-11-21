@@ -57,6 +57,8 @@ sync**; the script installation and display preferences are separate.
   fallback. It reuses the current session and a page-exposed API key if present;
   no key is bundled, persisted or transmitted to another origin. No analytics,
   third-party requests or runtime dependencies.
+- API requests refuse redirects and enforce same-origin fetch mode, preventing
+  a redirect from forwarding a page-provided API key elsewhere.
 - React properties and page structure are internal interfaces and can change
   with Lidarr updates. API failure leaves native rows available and reports the
   error; Reload groups retries.
@@ -95,7 +97,7 @@ This demonstrates grouping using synthetic rows, not a full Lidarr UI.
 
 ## Updates and recovery
 
-Downloads and update checks are pinned to **v1.0.6**. Installing this release
+Downloads and update checks are pinned to **v1.0.7**. Installing this release
 does not opt into future versions automatically. The browser owner controls installation:
 review a new release, run the checks, export the installed script as a backup,
 then install the newly reviewed release from its published URL. Reload an
@@ -114,3 +116,6 @@ sample metadata where possible. Changes should preserve native controls and
 avoid API writes. Run the browser checks before proposing a change.
 
 Independent project; not affiliated with Lidarr or Tampermonkey. MIT licensed.
+
+See [SECURITY.md](SECURITY.md) for the security review, trust boundaries and
+the fixed redirect issue affecting versions through 1.0.6.

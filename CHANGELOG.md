@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.7 — prevent API-key forwarding through redirects
+
+- Reject all API redirects and enforce same-origin fetch mode. Previously, the
+  API fallback checked only its initial URL; a redirect could forward a
+  page-provided X-Api-Key to a different origin that permits the CORS request.
+- Reproduced the issue with a synthetic key and a local redirect fixture, then
+  verified the fixed script makes no request to the redirect destination.
+- Add a separate regression check for an off-origin configured API root.
+
 ## 1.0.6 — embedded Lidarr compatibility
 
 - Allow execution inside Lidarr frames, including dashboards such as Organizr.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Lidarr release groups
 // @namespace    lidarr-release-groups
-// @version      1.0.6
+// @version      1.0.7
 // @description  Collapsible release groups, sorted by release date. Presentation only.
 // @match        http://*/*
 // @match        https://*/*
@@ -11,8 +11,8 @@
 // @homepageURL  https://github.com/onelivewire/lidarr-release-groups
 // @supportURL   https://github.com/onelivewire/lidarr-release-groups/issues
 // @license      MIT
-// @updateURL    https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.6/release-groups.user.js
-// @downloadURL  https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.6/release-groups.user.js
+// @updateURL    https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.7/release-groups.user.js
+// @downloadURL  https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.7/release-groups.user.js
 // ==/UserScript==
 
 (() => {
@@ -20,7 +20,7 @@
   // Leave other applications alone, even if they share the usual port/path.
   if (!window.Lidarr && !/\bLidarr\b/i.test(document.title)) return;
   if (window.__lidarrReleaseGroups) window.__lidarrReleaseGroups.stop();
-  const VERSION = '1.0.6';
+  const VERSION = '1.0.7';
   const KEY = 'lidarr.releaseGroups.v1';
   const MARK = 'data-lrg-release-groups';
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
@@ -198,7 +198,8 @@
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
     try {
-      const response = await fetch(url.href, { method: 'GET', credentials: 'same-origin', headers, signal: controller.signal });
+      // Refuse redirects before any credential-bearing request can leave this origin.
+      const response = await fetch(url.href, { method: 'GET', mode: 'same-origin', redirect: 'error', credentials: 'same-origin', headers, signal: controller.signal });
       if (!response.ok) throw new Error('Metadata request failed (HTTP ' + response.status + ')');
       return await response.json();
     } finally { clearTimeout(timeout); }
