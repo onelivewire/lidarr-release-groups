@@ -13,18 +13,9 @@ Types does **not** need to be a visible column.
 1. Install Tampermonkey in your browser.
 2. Click [Install the script](https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/main/release-groups.user.js)
    and confirm installation in Tampermonkey.
-3. Standard Lidarr addresses on **port 8686** and reverse proxies under
-   **`/lidarr/`** work without editing. The script also checks the page identifies
-   itself as Lidarr before starting. For a different port or proxy path, open
-   the script's Tampermonkey Settings and add your URL under **User matches**:
-
-   ```js
-   https://music.example.com/*
-   ```
-
-   Use the narrowest hostname/path that covers your installation. Match patterns
-   omit ports for Chrome/Firefox compatibility. Keep customization in manager
-   settings instead of editing the downloaded source.
+3. Server addresses, custom ports and reverse proxies work without editing.
+   URL matches cover HTTP/HTTPS, and the script requires a Lidarr page identity
+   before starting. This lets a synced copy work with your server address.
 4. In Chrome, enable Tampermonkey's **Allow User Scripts** permission if
    required, and grant the extension access to your Lidarr site. Restrict site
    access to your Lidarr hosts; all-sites extension access is unnecessary.
@@ -104,7 +95,7 @@ This demonstrates grouping using synthetic rows, not a full Lidarr UI.
 
 ## Updates and recovery
 
-Downloads and update checks are pinned to **v1.0.4**. Installing this release
+Downloads and update checks are pinned to **v1.0.5**. Installing this release
 does not opt into future versions automatically. The browser owner controls installation:
 review a new release, run the checks, export the installed script as a backup,
 then install the newly reviewed release from its published URL. Reload an

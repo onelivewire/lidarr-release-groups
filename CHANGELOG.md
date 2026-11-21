@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 — Chrome activation fix
+
+- Use standard HTTP/HTTPS URL matches with a Lidarr identity guard, avoiding
+  unreliable activation of regex port includes under Chrome's restricted site
+  permissions. Keep Tampermonkey's site access restricted to your Lidarr hosts.
+- Support custom ports and proxy paths without editing the script.
+
 ## 1.0.4 — first public release
 
 - Publish a stable installation URL and version-pinned download/update metadata

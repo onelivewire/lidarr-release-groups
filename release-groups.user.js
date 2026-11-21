@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Lidarr release groups
 // @namespace    lidarr-release-groups
-// @version      1.0.4
+// @version      1.0.5
 // @description  Collapsible release groups, sorted by release date. Presentation only.
-// @include      /^https?:\/\/[^/]+:8686\/.*$/
-// @match        *://*/lidarr/*
+// @match        http://*/*
+// @match        https://*/*
 // @grant        none
 // @sandbox      raw
 // @run-at       document-idle
@@ -12,8 +12,8 @@
 // @supportURL   https://github.com/onelivewire/lidarr-release-groups/issues
 // @license      MIT
 // @noframes
-// @updateURL    https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.4/release-groups.user.js
-// @downloadURL  https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.4/release-groups.user.js
+// @updateURL    https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.5/release-groups.user.js
+// @downloadURL  https://raw.githubusercontent.com/onelivewire/lidarr-release-groups/v1.0.5/release-groups.user.js
 // ==/UserScript==
 
 (() => {
@@ -21,7 +21,7 @@
   // Leave other applications alone, even if they share the usual port/path.
   if (!window.Lidarr && !/\bLidarr\b/i.test(document.title)) return;
   if (window.__lidarrReleaseGroups) window.__lidarrReleaseGroups.stop();
-  const VERSION = '1.0.4';
+  const VERSION = '1.0.5';
   const KEY = 'lidarr.releaseGroups.v1';
   const MARK = 'data-lrg-release-groups';
   const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
